@@ -1,3 +1,6 @@
 utils/__pycache__
 Database
 *.log
+results
+logs
+roberta_finetuned_model
