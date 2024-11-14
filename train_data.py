@@ -73,18 +73,25 @@ dataset_2 = pd.read_csv("C:/Users/Legion/Ritik/Desktop/Programming/Intern work/0
 dataset_2['label'] = dataset_2['sentiment'].map({'positive': 2, 'neutral': 1, 'negative': 0})  # Adjust mapping if necessary
 
 # Split the dataset into train and test sets
-train_df, test_df = train_test_split(dataset_2, test_size=0.2)
+# train_df, test_df = train_test_split(dataset_2, test_size=0.2)
 
-# Convert pandas DataFrames to Hugging Face Datasets
-train_dataset = Dataset.from_pandas(train_df)
-test_dataset = Dataset.from_pandas(test_df)
+# Convert DataFrame to Hugging Face Dataset
+dataset = Dataset.from_pandas(dataset_2)
 
-tokenized_datasets = dataset_2.map(tokenize_function, batched=True)
+# Split the dataset
+tokenized_datasets = dataset.train_test_split(test_size=0.2)
+
+# Tokenize the splits
+tokenized_datasets = tokenized_datasets.map(tokenize_function, batched=True)
+
+# Access train and test datasets
+train_dataset_2 = tokenized_datasets['train']
+test_dataset_2 = tokenized_datasets['test']
 
 # Create a DatasetDict
 dataset_2 = DatasetDict({
-    'train': train_dataset,
-    'test': test_dataset
+    'train': train_dataset_2,
+    'test': test_dataset_2
 })
 
 # Set up training arguments

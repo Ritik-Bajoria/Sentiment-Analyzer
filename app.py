@@ -2,9 +2,6 @@ from utils.logger import Logger
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
-import numpy as np
-import matplotlib as plt
-import seaborn as sns
 import sys
 import signal
 from utils.vader_model import vader_sentiment
@@ -31,7 +28,7 @@ def sentimentAnalyzer():
     rob_score = 0
     vad_score = 0
     # taking one review from the database
-    example = "What a wonderful product would probably recommend it to my worst enemy"
+    example = "If you enjoy questionable stains, paper-thin walls, and the feeling of rough sandpaper sheets, this is the place for you. It really takes the phrase 'roughing it' to a new level."
     # doing sentiment analysis using vader model
     vad = vader_sentiment(example)
 
