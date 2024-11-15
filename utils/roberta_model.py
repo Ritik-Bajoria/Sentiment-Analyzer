@@ -1,9 +1,10 @@
 from transformers import AutoTokenizer
 from transformers import AutoModelForSequenceClassification
 from scipy.special import softmax
+import os
 
 MODEL ="cardiffnlp/twitter-roberta-base-sentiment"
-TOKEN = "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"
+TOKEN = os.getenv('TOKEN')
 tokenizer = AutoTokenizer.from_pretrained(MODEL,token = TOKEN)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL,token = TOKEN)
 
