@@ -7,3 +7,4 @@ roberta_finetuned_model
 results_second
 myenv
 .env
+__pycache__
