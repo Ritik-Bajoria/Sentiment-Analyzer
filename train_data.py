@@ -45,11 +45,13 @@ dataset_1 = DatasetDict({
     'train': train_dataset,
     'test': test_dataset
 })
-if os.path.exists(directory) and os.path.isdir(directory):
-    model = RobertaForSequenceClassification.from_pretrained('./roberta_finetuned_model')
-    tokenizer = RobertaTokenizer.from_pretrained('./roberta_finetuned_model')
+
+trained_model = './roberta_finetuned_model'
+
+if os.path.exists(trained_model) and os.path.isdir(trained_model):
+    model = RobertaForSequenceClassification.from_pretrained(trained_model)
+    tokenizer = RobertaTokenizer.from_pretrained(trained_model)
 else:
-    # Now, load the model from the saved state to continue training on the second dataset
     model = RobertaForSequenceClassification.from_pretrained('cardiffnlp/twitter-roberta-base-sentiment')
     tokenizer = RobertaTokenizer.from_pretrained('cardiffnlp/twitter-roberta-base-sentiment')
 
