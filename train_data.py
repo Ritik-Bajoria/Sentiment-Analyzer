@@ -2,13 +2,36 @@ from transformers import RobertaForSequenceClassification, RobertaTokenizer, Tra
 from datasets import Dataset, DatasetDict
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
+import os
+import sys
 
-# Load your dataset
-dataset_1 = pd.read_csv("C:/Users/Legion/Ritik/Desktop/Programming/Intern work/04-Intern/Sentiment Analysis/Database/IMDB Dataset.csv")
+if os.path.exists("/.dockerenv"):
+    print("This file can't be run in a docker environment")
+    sys.exit()
 
-# Ensure the label column is present and contains values (e.g., 0, 1, 2 for a 3-class classification problem)
-# Assuming 'text' is the text column and 'label' is the label column in the IMDB dataset
-dataset_1['label'] = dataset_1['sentiment'].map({'positive': 2, 'neutral': 1, 'negative': 0})  # Adjust mapping if necessary
+# Initialize Tkinter window (it will not be shown)
+Tk().withdraw()
+
+# Ask the user to select the file
+file_path = askopenfilename(title="Select Dataset for training the model", filetypes=[("CSV files", "*.csv")])
+
+# Load the dataset
+if file_path:
+    dataset_1 = pd.read_csv(file_path)
+    print("Dataset loaded successfully!")
+else:
+    print("No file selected!")
+    sys.exit()
+
+sentiment = input("enter the name of column containing sentiment:\t")
+text = input("enter the name of column containing reviews:\t")
+positive = input("enter categorical text used for positive:\t")
+neutral = input("enter categorical text used for neutral:\t")
+negative = input("enter categorical text used for negative:\t")
+
+dataset_1['label'] = dataset_1[sentiment].map({positive: 2, neutral: 1, negative: 0})  # Adjust mapping if necessary
 
 # Split the dataset into train and test sets
 train_df, test_df = train_test_split(dataset_1, test_size=0.2)
@@ -22,14 +45,17 @@ dataset_1 = DatasetDict({
     'train': train_dataset,
     'test': test_dataset
 })
-
-# Now, load the model from the saved state to continue training on the second dataset
-model = RobertaForSequenceClassification.from_pretrained('cardiffnlp/twitter-roberta-base-sentiment')
-tokenizer = RobertaTokenizer.from_pretrained('cardiffnlp/twitter-roberta-base-sentiment')
+if os.path.exists(directory) and os.path.isdir(directory):
+    model = RobertaForSequenceClassification.from_pretrained('./roberta_finetuned_model')
+    tokenizer = RobertaTokenizer.from_pretrained('./roberta_finetuned_model')
+else:
+    # Now, load the model from the saved state to continue training on the second dataset
+    model = RobertaForSequenceClassification.from_pretrained('cardiffnlp/twitter-roberta-base-sentiment')
+    tokenizer = RobertaTokenizer.from_pretrained('cardiffnlp/twitter-roberta-base-sentiment')
 
 # Tokenize the dataset
 def tokenize_function(examples):
-    return tokenizer(examples['text'], padding=True, truncation=True, max_length=128)
+    return tokenizer(examples[text], padding=True, truncation=True, max_length=128)
 
 tokenized_datasets = dataset_1.map(tokenize_function, batched=True)
 
@@ -61,62 +87,3 @@ model.save_pretrained('./roberta_finetuned_model')
 
 # Save the tokenizer to the same directory
 tokenizer.save_pretrained('./roberta_finetuned_model')
-
-model = RobertaForSequenceClassification.from_pretrained('./roberta_finetuned_model')
-tokenizer = RobertaTokenizer.from_pretrained('./roberta_finetuned_model')
-
-# Load your dataset
-dataset_2 = pd.read_csv("C:/Users/Legion/Ritik/Desktop/Programming/Intern work/04-Intern/Sentiment Analysis/Database/IMDB Dataset.csv")
-
-# Ensure the label column is present and contains values (e.g., 0, 1, 2 for a 3-class classification problem)
-# Assuming 'text' is the text column and 'label' is the label column in the IMDB dataset
-dataset_2['label'] = dataset_2['sentiment'].map({'positive': 2, 'neutral': 1, 'negative': 0})  # Adjust mapping if necessary
-
-# Split the dataset into train and test sets
-# train_df, test_df = train_test_split(dataset_2, test_size=0.2)
-
-# Convert DataFrame to Hugging Face Dataset
-dataset = Dataset.from_pandas(dataset_2)
-
-# Split the dataset
-tokenized_datasets = dataset.train_test_split(test_size=0.2)
-
-# Tokenize the splits
-tokenized_datasets = tokenized_datasets.map(tokenize_function, batched=True)
-
-# Access train and test datasets
-train_dataset_2 = tokenized_datasets['train']
-test_dataset_2 = tokenized_datasets['test']
-
-# Create a DatasetDict
-dataset_2 = DatasetDict({
-    'train': train_dataset_2,
-    'test': test_dataset_2
-})
-
-# Set up training arguments
-training_args = TrainingArguments(
-    output_dir='./results_second',
-    eval_strategy="epoch",
-    learning_rate=2e-5,
-    per_device_train_batch_size=16,
-    per_device_eval_batch_size=64,
-    num_train_epochs=3,
-    weight_decay=0.01,
-    logging_dir='./logs',
-)
-
-# Initialize Trainer
-trainer = Trainer(
-    model=model,
-    args=training_args,
-    train_dataset=tokenized_datasets['train'],
-    eval_dataset=tokenized_datasets['test'],
-)
-
-# Train the model on the second dataset
-trainer.train()
-
-# Optionally, save the model after the second training
-model.save_pretrained('./model_after_second_training')
-tokenizer.save_pretrained('./model_after_second_training')

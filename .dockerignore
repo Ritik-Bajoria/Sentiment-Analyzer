@@ -1,0 +1,9 @@
+Database
+logs
+myenv
+utils/__pycache__
+__pycache__
+*.log
+.env
+README.md 
+.gitignore
