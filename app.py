@@ -7,6 +7,7 @@ import sys
 import signal
 from utils.vader_model import vader_sentiment
 from utils.roberta_model import roberta_sentiment, roberta_sentiment_2
+import os
 
 #create an instance of logger
 logger = Logger()
@@ -15,6 +16,15 @@ logger = Logger()
 app = Flask(__name__)
 CORS(app)
 
+# get api key from envioronment 
+API_KEY = os.getenv('API_KEY')
+
+# function to validate the API key from the request headers.
+def validate_api_key():
+    api_key = request.headers.get('X-API-KEY')
+    if api_key is None or api_key != API_KEY:
+        return False
+    return True
 
 # Middleware: before each request
 @app.before_request
@@ -25,7 +35,12 @@ def before_request_func():
 #Routes for our API
 @app.route('/api/sentiment-analysis',methods = ['GET'])
 def sentimentAnalyzer():
-
+    # Validate the API key
+    if not validate_api_key():
+        return jsonify({
+            "error":True,
+            "message": "Unauthorized access"
+            }), 401
     # importing the database
     df = pd.read_csv('./Database/IMDB Dataset.csv')
 
@@ -96,6 +111,7 @@ signal.signal(signal.SIGTERM, graceful_shutdown)
 
 
 if __name__ == '__main__':
-    port = 4000
-    app.run(debug=True,host="127.0.0.1", port=port)
+    port = os.getenv('PORT')
+    host = os.getenv('HOST')
+    app.run(debug=True,host=host, port=port)
 

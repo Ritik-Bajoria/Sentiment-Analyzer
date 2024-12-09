@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sentiment_analysis_api
+    ports:
+      - "4000:4000"
+    environment:
+      - API_KEY=${API_KEY}
+      - HOST=${HOST}
+      - PORT=${PORT}
+      - FLASK_APP=app.py
